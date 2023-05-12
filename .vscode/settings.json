@@ -1,0 +1,7 @@
+{
+    "gopls": {
+        "build.env": {
+            "CGO_ENABLED": "0"
+        }
+    }
+}
