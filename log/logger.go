@@ -17,6 +17,7 @@ type Logger interface {
 	Warnf(format string, args ...any)
 	Error(msg any)
 	Errorf(format string, args ...any)
+	Panic(msg any)
 	Fatal(msg any)
 	Fatalf(format string, args ...any)
 }
@@ -84,4 +85,9 @@ func (l *StandardLogger) Fatal(msg any) {
 
 func (l *StandardLogger) Fatalf(format string, args ...any) {
 	l.internalLogger.Fatalf(format, args...)
+}
+
+func (l *StandardLogger) Panic(msg any) {
+	l.internalLogger.Error(msg)
+	panic(msg)
 }
