@@ -4,7 +4,9 @@ import (
 	"os"
 
 	"bode.fun/otp/cmd"
+	"bode.fun/otp/core"
 	"bode.fun/otp/log"
+	"github.com/pocketbase/dbx"
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +23,7 @@ func main() {
 type App struct {
 	rootCmd *cobra.Command
 	logger  log.Logger
+	db      *dbx.DB
 }
 
 func New() *App {
@@ -37,9 +40,16 @@ func New() *App {
 
 	logger := log.New(os.Stderr, AppName)
 
+	// TODO: load this from config and maybe close the db
+	db, err := core.ConnectDB(":memory:")
+	if err != nil {
+		logger.Panic(err)
+	}
+
 	app := &App{
 		rootCmd,
 		logger,
+		db,
 	}
 
 	app.registerCommands()
