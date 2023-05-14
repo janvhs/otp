@@ -14,3 +14,5 @@ dist/
 
 # Go workspace file
 go.work
+
+test.db

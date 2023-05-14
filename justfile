@@ -31,3 +31,13 @@ env:
 fmt:
     @go fmt .
     @go mod tidy
+
+goose *FLAGS:
+    @mkdir -p ./migrations
+    @echo "for commands run just goose --help"
+    go run github.com/pressly/goose/v3/cmd/goose -dir migrations/ sqlite3 {{ FLAGS }}
+
+goose-init db *FLAGS:
+    @mkdir -p ./migrations
+    @echo "for commands run just goose --help"
+    go run github.com/pressly/goose/v3/cmd/goose -dir migrations/ sqlite3 {{ db }} create init sql {{ FLAGS }}
