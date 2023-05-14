@@ -1,5 +1,3 @@
-// TODO: because of zed, this is currently removed: //go:build !cgo
-
 package core
 
 // INFO: 	This file is a slightly modified copy of the file linked below.
