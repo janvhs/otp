@@ -16,10 +16,10 @@ type Algorithm func() hash.Hash
 type Hotp struct {
 	Secret    []byte
 	Algorithm Algorithm
-	Digits    int
+	Digits    uint
 }
 
-func NewHotp(secret []byte, algorithm Algorithm, digits int) *Hotp {
+func NewHotp(secret []byte, algorithm Algorithm, digits uint) *Hotp {
 	return &Hotp{
 		Secret:    secret,
 		Algorithm: algorithm,
@@ -27,7 +27,7 @@ func NewHotp(secret []byte, algorithm Algorithm, digits int) *Hotp {
 	}
 }
 
-func NewHotpFromBase32(secret string, algorithm Algorithm, digits int) (*Hotp, error) {
+func NewHotpFromBase32(secret string, algorithm Algorithm, digits uint) (*Hotp, error) {
 	// Normally strings used for hotp do not contain padding
 	hasPadding := strings.Contains(secret, "=")
 	padding := base32.NoPadding
@@ -91,9 +91,9 @@ func calculateOffset(digest []byte) uint8 {
 // Shorten the code to the desired length.
 // The length od the calculated code can, by design, not be higher than 10 characters.
 // If the digit size is larger then 10, it just gets prefixed with zeros.
-func shortenCodeToDigits(fullCode uint32, digits int) uint32 {
+func shortenCodeToDigits(fullCode uint32, digits uint) uint32 {
 	if digits < 10 {
-		modulusBase := uint32(math.Floor(math.Pow10(digits)))
+		modulusBase := uint32(math.Pow10(int(digits)))
 		return fullCode % modulusBase
 	}
 
