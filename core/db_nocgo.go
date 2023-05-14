@@ -1,4 +1,4 @@
-//go:build !cgo
+// TODO: because of zed, this is currently removed: //go:build !cgo
 
 package core
 
