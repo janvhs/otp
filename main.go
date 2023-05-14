@@ -57,8 +57,16 @@ func New() *App {
 	return app
 }
 
+func (a *App) DB() *dbx.DB {
+	return a.db
+}
+
+func (a *App) Logger() log.Logger {
+	return a.logger
+}
+
 func (a *App) registerCommands() {
-	a.rootCmd.AddCommand(cmd.AddCmd)
+	a.rootCmd.AddCommand(cmd.NewAddCommand(a))
 }
 
 func (a *App) Run() error {
