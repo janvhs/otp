@@ -1,10 +1,12 @@
-hotp: {
-  shape: sql_table
+Otp Store: {
+  shape: class
 
-  id: TEXT {
-    constraint: primary_key
-  }
-  secret: TEXT
-  digits: INTEGER
-  algorithm: TEXT
+  type: Hotp|Totp
+  
+  service: string
+  secret: string
+  digits: uint
+  algorithm: Sha1|Sha256|Sha512
+
+  stepSize: ?uint
 }
