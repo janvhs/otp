@@ -44,15 +44,15 @@ func NewTotp(secret []byte, algorithm Algorithm, digits uint) *Totp {
 }
 
 func (t *Totp) Digits() uint {
-	return t.hotp.Digits
+	return t.hotp.Digits()
 }
 
 func (t *Totp) Secret() []byte {
-	return t.hotp.Secret
+	return t.hotp.Secret()
 }
 
 func (t *Totp) Algorithm() Algorithm {
-	return t.hotp.Algorithm
+	return t.hotp.Algorithm()
 }
 
 func (t *Totp) Calculate(movingFactor uint64) uint32 {

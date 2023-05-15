@@ -16,9 +16,9 @@ type Algorithm func() hash.Hash
 // It uses a counter to verify the user. This counter has to be stored on
 // the server and the client.
 type Hotp struct {
-	Secret    []byte
-	Algorithm Algorithm
-	Digits    uint
+	secret    []byte
+	algorithm Algorithm
+	digits    uint
 }
 
 // Create a Hotp instance from a unencoded secret.
@@ -29,9 +29,9 @@ type Hotp struct {
 //	hotp := NewHotp([]byte("12345678901234567890"), sha1.New, 6)
 func NewHotp(secret []byte, algorithm Algorithm, digits uint) *Hotp {
 	return &Hotp{
-		Secret:    secret,
-		Algorithm: algorithm,
-		Digits:    digits,
+		secret:    secret,
+		algorithm: algorithm,
+		digits:    digits,
 	}
 }
 
@@ -62,13 +62,25 @@ func NewHotpFromBase32(secret string, algorithm Algorithm, digits uint) (*Hotp, 
 	return NewHotp(decodedSecret, algorithm, digits), nil
 }
 
+func (h *Hotp) Digits() uint {
+	return h.digits
+}
+
+func (h *Hotp) Secret() []byte {
+	return h.secret
+}
+
+func (h *Hotp) Algorithm() Algorithm {
+	return h.algorithm
+}
+
 // Calculates the Hotp code, taking a counter as moving factor.
 // TODO: Maybe change the output to a string and prepend the result with 0s
 func (h *Hotp) Calculate(movingFactor uint64) uint32 {
-	digest := calculateDigest(movingFactor, h.Algorithm, h.Secret)
+	digest := calculateDigest(movingFactor, h.algorithm, h.secret)
 	offset := calculateOffset(digest)
 	fullCode := encodeDigest(digest, offset)
-	return shortenCodeToDigits(fullCode, h.Digits)
+	return shortenCodeToDigits(fullCode, h.digits)
 }
 
 // Calculates the Hotp code, taking a counter as moving factor.
@@ -79,9 +91,9 @@ func (h *Hotp) Calculate(movingFactor uint64) uint32 {
 // 28 for SHA256 (32 byte digest) and 60 for SHA512 (64 byte digest).
 // TODO: Decide if this should be exposed
 func (h *Hotp) calculateCustomOffset(movingFactor uint64, offset uint8) uint32 {
-	digest := calculateDigest(movingFactor, h.Algorithm, h.Secret)
+	digest := calculateDigest(movingFactor, h.algorithm, h.secret)
 	fullCode := encodeDigest(digest, offset)
-	return shortenCodeToDigits(fullCode, h.Digits)
+	return shortenCodeToDigits(fullCode, h.digits)
 }
 
 // Calculate hmac digest of the moving Factor
