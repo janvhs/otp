@@ -1,0 +1,10 @@
+hotp: {
+  shape: sql_table
+
+  id: TEXT {
+    constraint: primary_key
+  }
+  secret: TEXT
+  digits: INTEGER
+  algorithm: TEXT
+}
