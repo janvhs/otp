@@ -23,7 +23,7 @@ build-run *FLAGS:
     @./dist/{{ appName }} {{ FLAGS }}
 
 test *FLAGS:
-    @go test . {{ FLAGS }}
+    @go test {{ FLAGS }}
 
 clean:
     rm -ri ./dist
