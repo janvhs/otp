@@ -1,4 +1,4 @@
-module bode.fun/otp
+module bode.fun/2fa
 
 go 1.20
 

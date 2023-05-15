@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"bode.fun/otp/core"
+	"bode.fun/2fa/core"
 	"github.com/spf13/cobra"
 )
 

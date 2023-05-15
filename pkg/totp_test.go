@@ -6,7 +6,7 @@ import (
 	"crypto/sha512"
 	"testing"
 
-	"bode.fun/otp/pkg"
+	"bode.fun/2fa/pkg"
 	"github.com/matryer/is"
 )
 

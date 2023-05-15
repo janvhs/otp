@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"bode.fun/otp/cmd"
-	"bode.fun/otp/core"
-	"bode.fun/otp/log"
+	"bode.fun/2fa/cmd"
+	"bode.fun/2fa/core"
+	"bode.fun/2fa/log"
 	"github.com/pocketbase/dbx"
 	"github.com/spf13/cobra"
 )

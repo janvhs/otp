@@ -1,7 +1,7 @@
 package core
 
 import (
-	"bode.fun/otp/log"
+	"bode.fun/2fa/log"
 	"github.com/pocketbase/dbx"
 )
 
