@@ -49,7 +49,10 @@ type Hotp struct {
 //
 // Example:
 //
-//	hotp := New([]byte("12345678901234567890"), sha1.New, 6)
+//	hotp := New([]byte("12345678901234567890"),
+//				WithAlgorithm(sha1.New),
+//				WithDigits(6),
+//			)
 func New(secret []byte, options ...HotpOption) *Hotp {
 	opts := &HotpOptions{
 		Algorithm: defaultAlgorithm,
@@ -72,7 +75,12 @@ func New(secret []byte, options ...HotpOption) *Hotp {
 //
 // Example:
 //
-//	hotp := NewFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
+// Example:
+//
+//	hotp := NewFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+//				WithAlgorithm(sha1.New),
+//				WithDigits(6),
+//			)
 func NewFromBase32(secret string, options ...HotpOption) (*Hotp, error) {
 	// Usually strings, used for hotp, do not contain padding
 	hasPadding := strings.Contains(secret, "=")

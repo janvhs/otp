@@ -50,7 +50,10 @@ type Totp struct {
 //
 // Example:
 //
-//	totp := NewFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
+//	totp := NewFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+//				WithAlgorithm(sha1.New),
+//				WithDigits(6),
+//			)
 func NewFromBase32(secret string, options ...TotpOption) (*Totp, error) {
 	opts := &TotpOptions{
 		Algorithm: defaultAlgorithm,
@@ -82,7 +85,10 @@ func NewFromBase32(secret string, options ...TotpOption) (*Totp, error) {
 //
 // Example:
 //
-//	totp := New([]byte("12345678901234567890"), sha1.New, 6)
+//	totp := New([]byte("12345678901234567890"),
+//				WithAlgorithm(sha1.New),
+//				WithDigits(6),
+//			)
 func New(secret []byte, options ...TotpOption) *Totp {
 	opts := &TotpOptions{
 		Algorithm: defaultAlgorithm,
