@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/charmbracelet/log v0.2.1
+	github.com/matryer/is v1.4.1
 	github.com/pocketbase/dbx v1.10.0
 	github.com/pressly/goose/v3 v3.11.2
 	github.com/spf13/cobra v1.7.0

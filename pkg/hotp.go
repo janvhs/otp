@@ -1,7 +1,5 @@
 package pkg
 
-// TODO: Add tests
-
 import (
 	"crypto/hmac"
 	"encoding/base32"
@@ -66,18 +64,19 @@ func NewHotpFromBase32(secret string, algorithm Algorithm, digits uint) (*Hotp, 
 
 // Calculates the Hotp code, taking a counter as moving factor.
 // TODO: Maybe change the output to a string and prepend the result with 0s
-// TODO: Add tests
 func (h *Hotp) Calculate(movingFactor uint64) uint32 {
 	digest := calculateDigest(movingFactor, h.Algorithm, h.Secret)
-	fullCode := encodeDigest(digest, calculateOffset(digest))
+	offset := calculateOffset(digest)
+	fullCode := encodeDigest(digest, offset)
 	return shortenCodeToDigits(fullCode, h.Digits)
 }
 
 // Calculates the Hotp code, taking a counter as moving factor.
 // It uses a custom offset to extract 4 bytes from the HMAC-SHA Digest.
-// Keep in mind that the max value of the offset is the last index of the resulting digest minus four bytes.
-// Therefore, the offset has to be between (inclusive) 0 and 15 for SHA1, 27 for SHA256 and 59 for SHA512. // TODO: Revalidate that claim lol
-// TODO: Add tests
+// Keep in mind that the max value of the offset is the last index of the
+// resulting digest minus four bytes.
+// Therefore, the offset has to be between (inclusive) 0 and 16 for SHA1 (20 byte digest),
+// 28 for SHA256 (32 byte digest) and 60 for SHA512 (64 byte digest).
 // TODO: Decide if this should be exposed
 func (h *Hotp) calculateCustomOffset(movingFactor uint64, offset uint8) uint32 {
 	digest := calculateDigest(movingFactor, h.Algorithm, h.Secret)
