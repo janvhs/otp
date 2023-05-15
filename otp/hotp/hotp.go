@@ -2,6 +2,7 @@ package hotp
 
 import (
 	"crypto/hmac"
+	"crypto/sha1"
 	"encoding/base32"
 	"encoding/binary"
 	"math"
@@ -9,6 +10,29 @@ import (
 
 	"bode.fun/otp"
 )
+
+type HotpOptions struct {
+	Algorithm otp.Algorithm
+	Digits    uint
+}
+
+type HotpOption func(*HotpOptions)
+
+func WithDigits(digits uint) HotpOption {
+	return func(to *HotpOptions) {
+		to.Digits = digits
+	}
+}
+
+func WithAlgorithm(algorithm otp.Algorithm) HotpOption {
+	return func(to *HotpOptions) {
+		to.Algorithm = algorithm
+	}
+}
+
+const defaultDigits uint = 6
+
+var defaultAlgorithm otp.Algorithm = sha1.New
 
 // Hotp is a counter based One Time Password algorithm.
 //
@@ -26,11 +50,20 @@ type Hotp struct {
 // Example:
 //
 //	hotp := New([]byte("12345678901234567890"), sha1.New, 6)
-func New(secret []byte, algorithm otp.Algorithm, digits uint) *Hotp {
+func New(secret []byte, options ...HotpOption) *Hotp {
+	opts := &HotpOptions{
+		Algorithm: defaultAlgorithm,
+		Digits:    defaultDigits,
+	}
+
+	for _, option := range options {
+		option(opts)
+	}
+
 	return &Hotp{
 		secret:    secret,
-		algorithm: algorithm,
-		digits:    digits,
+		algorithm: opts.Algorithm,
+		digits:    opts.Digits,
 	}
 }
 
@@ -40,7 +73,7 @@ func New(secret []byte, algorithm otp.Algorithm, digits uint) *Hotp {
 // Example:
 //
 //	hotp := NewFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
-func NewFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Hotp, error) {
+func NewFromBase32(secret string, options ...HotpOption) (*Hotp, error) {
 	// Usually strings, used for hotp, do not contain padding
 	hasPadding := strings.Contains(secret, "=")
 	padding := base32.NoPadding
@@ -58,7 +91,7 @@ func NewFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Hotp, 
 		return nil, err
 	}
 
-	return New(decodedSecret, algorithm, digits), nil
+	return New(decodedSecret, options...), nil
 }
 
 func (h *Hotp) Digits() uint {

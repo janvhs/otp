@@ -1,7 +1,6 @@
 package totp_test
 
 import (
-	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
 	"testing"
@@ -17,7 +16,10 @@ import (
 // It just checks sha1
 func Test_Rfc6238_Sha1(t *testing.T) {
 	is := is.New(t)
-	totp := totp.New([]byte("12345678901234567890"), sha1.New, 8)
+	totp := totp.New(
+		[]byte("12345678901234567890"),
+		totp.WithDigits(8),
+	)
 
 	{
 		code := totp.Calculate(59)
@@ -59,8 +61,8 @@ func Test_Rfc6238_Sha256(t *testing.T) {
 	is := is.New(t)
 	totp := totp.New(
 		[]byte("12345678901234567890123456789012"),
-		sha256.New,
-		8,
+		totp.WithAlgorithm(sha256.New),
+		totp.WithDigits(8),
 	)
 
 	{
@@ -103,8 +105,8 @@ func Test_Rfc6238_Sha512(t *testing.T) {
 	is := is.New(t)
 	totp := totp.New(
 		[]byte("1234567890123456789012345678901234567890123456789012345678901234"),
-		sha512.New,
-		8,
+		totp.WithAlgorithm(sha512.New),
+		totp.WithDigits(8),
 	)
 
 	{
