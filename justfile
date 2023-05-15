@@ -32,8 +32,14 @@ env:
     @go env
 
 fmt:
-    @go fmt .
+    @gofmt -s -w -l .
+    @just tidy
+
+tidy:
+    @cd ./tools && go mod tidy
+    @cd ./otp && go mod tidy
     @go mod tidy
+    @go work sync
 
 goose *FLAGS:
     @mkdir -p ./migrations
