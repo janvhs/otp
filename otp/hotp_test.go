@@ -1,10 +1,10 @@
-package pkg_test
+package otp_test
 
 import (
 	"crypto/sha1"
 	"testing"
 
-	"bode.fun/2fa/pkg"
+	"bode.fun/otp"
 	"github.com/matryer/is"
 )
 
@@ -14,7 +14,7 @@ import (
 // https://www.rfc-editor.org/rfc/rfc4226#page-32
 func Test_Rfc4226(t *testing.T) {
 	is := is.New(t)
-	h := pkg.NewHotp([]byte("12345678901234567890"), sha1.New, 6)
+	h := otp.NewHotp([]byte("12345678901234567890"), sha1.New, 6)
 
 	{
 		code := h.Calculate(0)

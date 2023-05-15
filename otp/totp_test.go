@@ -1,4 +1,4 @@
-package pkg_test
+package otp_test
 
 import (
 	"crypto/sha1"
@@ -6,7 +6,7 @@ import (
 	"crypto/sha512"
 	"testing"
 
-	"bode.fun/2fa/pkg"
+	"bode.fun/otp"
 	"github.com/matryer/is"
 )
 
@@ -17,7 +17,7 @@ import (
 // It just checks sha1
 func Test_Rfc6238_Sha1(t *testing.T) {
 	is := is.New(t)
-	totp := pkg.NewTotp([]byte("12345678901234567890"), sha1.New, 8)
+	totp := otp.NewTotp([]byte("12345678901234567890"), sha1.New, 8)
 
 	{
 		code := totp.Calculate(59)
@@ -57,7 +57,7 @@ func Test_Rfc6238_Sha1(t *testing.T) {
 // It just checks sha256
 func Test_Rfc6238_Sha256(t *testing.T) {
 	is := is.New(t)
-	totp := pkg.NewTotp(
+	totp := otp.NewTotp(
 		[]byte("12345678901234567890123456789012"),
 		sha256.New,
 		8,
@@ -101,7 +101,7 @@ func Test_Rfc6238_Sha256(t *testing.T) {
 // It just checks sha512
 func Test_Rfc6238_Sha512(t *testing.T) {
 	is := is.New(t)
-	totp := pkg.NewTotp(
+	totp := otp.NewTotp(
 		[]byte("1234567890123456789012345678901234567890123456789012345678901234"),
 		sha512.New,
 		8,

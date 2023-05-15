@@ -1,4 +1,4 @@
-package pkg
+package otp
 
 import (
 	"crypto/hmac"
