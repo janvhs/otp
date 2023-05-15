@@ -1,14 +1,17 @@
-package otp
+package totp
 
 import (
 	"math"
 	"time"
+
+	"bode.fun/otp"
+	"bode.fun/otp/hotp"
 )
 
 const defaultStepSize uint = 30
 
 type Totp struct {
-	hotp     *Hotp
+	hotp     *hotp.Hotp
 	StepSize uint
 }
 
@@ -18,8 +21,8 @@ type Totp struct {
 // Example:
 //
 //	totp := NewTotpFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
-func NewTotpFromBase32(secret string, algorithm Algorithm, digits uint) (*Totp, error) {
-	hotp, err := NewHotpFromBase32(secret, algorithm, digits)
+func NewTotpFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Totp, error) {
+	hotp, err := hotp.NewHotpFromBase32(secret, algorithm, digits)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +38,8 @@ func NewTotpFromBase32(secret string, algorithm Algorithm, digits uint) (*Totp, 
 // Example:
 //
 //	totp := NewTotp([]byte("12345678901234567890"), sha1.New, 6)
-func NewTotp(secret []byte, algorithm Algorithm, digits uint) *Totp {
-	hotp := NewHotp(secret, algorithm, digits)
+func NewTotp(secret []byte, algorithm otp.Algorithm, digits uint) *Totp {
+	hotp := hotp.NewHotp(secret, algorithm, digits)
 	return &Totp{
 		hotp:     hotp,
 		StepSize: defaultStepSize,
@@ -51,7 +54,7 @@ func (t *Totp) Secret() []byte {
 	return t.hotp.Secret()
 }
 
-func (t *Totp) Algorithm() Algorithm {
+func (t *Totp) Algorithm() otp.Algorithm {
 	return t.hotp.Algorithm()
 }
 

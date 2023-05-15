@@ -1,15 +1,14 @@
-package otp
+package hotp
 
 import (
 	"crypto/hmac"
 	"encoding/base32"
 	"encoding/binary"
-	"hash"
 	"math"
 	"strings"
-)
 
-type Algorithm func() hash.Hash
+	"bode.fun/otp"
+)
 
 // Hotp is a counter based One Time Password algorithm.
 //
@@ -17,7 +16,7 @@ type Algorithm func() hash.Hash
 // the server and the client.
 type Hotp struct {
 	secret    []byte
-	algorithm Algorithm
+	algorithm otp.Algorithm
 	digits    uint
 }
 
@@ -27,7 +26,7 @@ type Hotp struct {
 // Example:
 //
 //	hotp := NewHotp([]byte("12345678901234567890"), sha1.New, 6)
-func NewHotp(secret []byte, algorithm Algorithm, digits uint) *Hotp {
+func NewHotp(secret []byte, algorithm otp.Algorithm, digits uint) *Hotp {
 	return &Hotp{
 		secret:    secret,
 		algorithm: algorithm,
@@ -41,7 +40,7 @@ func NewHotp(secret []byte, algorithm Algorithm, digits uint) *Hotp {
 // Example:
 //
 //	hotp := NewHotpFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
-func NewHotpFromBase32(secret string, algorithm Algorithm, digits uint) (*Hotp, error) {
+func NewHotpFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Hotp, error) {
 	// Usually strings, used for hotp, do not contain padding
 	hasPadding := strings.Contains(secret, "=")
 	padding := base32.NoPadding
@@ -70,7 +69,7 @@ func (h *Hotp) Secret() []byte {
 	return h.secret
 }
 
-func (h *Hotp) Algorithm() Algorithm {
+func (h *Hotp) Algorithm() otp.Algorithm {
 	return h.algorithm
 }
 
@@ -97,7 +96,7 @@ func (h *Hotp) calculateCustomOffset(movingFactor uint64, offset uint8) uint32 {
 }
 
 // Calculate hmac digest of the moving Factor
-func calculateDigest(movingFactor uint64, algorithm Algorithm, secret []byte) []byte {
+func calculateDigest(movingFactor uint64, algorithm otp.Algorithm, secret []byte) []byte {
 	hmacInstance := hmac.New(algorithm, secret)
 	binary.Write(hmacInstance, binary.BigEndian, movingFactor)
 	return hmacInstance.Sum(nil)
