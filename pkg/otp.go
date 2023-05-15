@@ -13,12 +13,22 @@ import (
 
 type Algorithm func() hash.Hash
 
+// Hotp is a counter based One Time Password algorithm.
+//
+// It uses a counter to verify the user. This counter has to be stored on
+// the server and the client.
 type Hotp struct {
 	Secret    []byte
 	Algorithm Algorithm
 	Digits    uint
 }
 
+// Create a Hotp instance from a unencoded secret.
+// The algorithm, that is usually used, is sha1.
+//
+// Example:
+//
+//	hotp := NewHotp([]byte("12345678901234567890"), sha1.New, 6)
 func NewHotp(secret []byte, algorithm Algorithm, digits uint) *Hotp {
 	return &Hotp{
 		Secret:    secret,
@@ -27,8 +37,14 @@ func NewHotp(secret []byte, algorithm Algorithm, digits uint) *Hotp {
 	}
 }
 
+// Create a Hotp instance from a base32 encoded secret.
+// The algorithm, that is usually used, is sha1.
+//
+// Example:
+//
+//	hotp := NewHotpFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
 func NewHotpFromBase32(secret string, algorithm Algorithm, digits uint) (*Hotp, error) {
-	// Normally strings used for hotp do not contain padding
+	// Usually strings, used for hotp, do not contain padding
 	hasPadding := strings.Contains(secret, "=")
 	padding := base32.NoPadding
 
@@ -37,7 +53,10 @@ func NewHotpFromBase32(secret string, algorithm Algorithm, digits uint) (*Hotp, 
 	}
 
 	// Decode the secret
-	decodedSecret, err := base32.StdEncoding.WithPadding(padding).DecodeString(strings.ToUpper(secret))
+	decodedSecret, err := base32.StdEncoding.
+		WithPadding(padding).
+		DecodeString(strings.ToUpper(secret))
+
 	if err != nil {
 		return nil, err
 	}
