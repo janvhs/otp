@@ -20,9 +20,9 @@ type Totp struct {
 //
 // Example:
 //
-//	totp := NewTotpFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
-func NewTotpFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Totp, error) {
-	hotp, err := hotp.NewHotpFromBase32(secret, algorithm, digits)
+//	totp := NewFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
+func NewFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Totp, error) {
+	hotp, err := hotp.NewFromBase32(secret, algorithm, digits)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +37,9 @@ func NewTotpFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*To
 //
 // Example:
 //
-//	totp := NewTotp([]byte("12345678901234567890"), sha1.New, 6)
-func NewTotp(secret []byte, algorithm otp.Algorithm, digits uint) *Totp {
-	hotp := hotp.NewHotp(secret, algorithm, digits)
+//	totp := New([]byte("12345678901234567890"), sha1.New, 6)
+func New(secret []byte, algorithm otp.Algorithm, digits uint) *Totp {
+	hotp := hotp.New(secret, algorithm, digits)
 	return &Totp{
 		hotp:     hotp,
 		StepSize: defaultStepSize,

@@ -25,8 +25,8 @@ type Hotp struct {
 //
 // Example:
 //
-//	hotp := NewHotp([]byte("12345678901234567890"), sha1.New, 6)
-func NewHotp(secret []byte, algorithm otp.Algorithm, digits uint) *Hotp {
+//	hotp := New([]byte("12345678901234567890"), sha1.New, 6)
+func New(secret []byte, algorithm otp.Algorithm, digits uint) *Hotp {
 	return &Hotp{
 		secret:    secret,
 		algorithm: algorithm,
@@ -39,8 +39,8 @@ func NewHotp(secret []byte, algorithm otp.Algorithm, digits uint) *Hotp {
 //
 // Example:
 //
-//	hotp := NewHotpFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
-func NewHotpFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Hotp, error) {
+//	hotp := NewFromBase32("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", sha1.New, 6)
+func NewFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Hotp, error) {
 	// Usually strings, used for hotp, do not contain padding
 	hasPadding := strings.Contains(secret, "=")
 	padding := base32.NoPadding
@@ -58,7 +58,7 @@ func NewHotpFromBase32(secret string, algorithm otp.Algorithm, digits uint) (*Ho
 		return nil, err
 	}
 
-	return NewHotp(decodedSecret, algorithm, digits), nil
+	return New(decodedSecret, algorithm, digits), nil
 }
 
 func (h *Hotp) Digits() uint {
