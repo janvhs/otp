@@ -17,7 +17,7 @@ var (
 
 func main() {
 	app := New()
-	defer app.DB().Close()
+	app.MustRun()
 }
 
 type App struct {
