@@ -4,26 +4,26 @@ import (
 	"os"
 
 	"bode.fun/2fa/cmd"
-	"bode.fun/2fa/core"
 	"bode.fun/2fa/log"
-	"github.com/pocketbase/dbx"
+	"github.com/charmbracelet/charm/kv"
 	"github.com/spf13/cobra"
 )
 
 var (
 	Version = "(dev)"
 	AppName = "2fa"
+	DBName  = AppName
 )
 
 func main() {
 	app := New()
-	app.MustRun()
+	defer app.DB().Close()
 }
 
 type App struct {
 	rootCmd *cobra.Command
 	logger  log.Logger
-	db      *dbx.DB
+	db      *kv.KV
 }
 
 func New() *App {
@@ -41,7 +41,7 @@ func New() *App {
 	logger := log.New(os.Stderr, AppName)
 
 	// TODO: load this from config and maybe close the db
-	db, err := core.ConnectDB(":memory:")
+	db, err := kv.OpenWithDefaults(DBName)
 	if err != nil {
 		logger.Panic(err)
 	}
@@ -57,7 +57,7 @@ func New() *App {
 	return app
 }
 
-func (a *App) DB() *dbx.DB {
+func (a *App) DB() *kv.KV {
 	return a.db
 }
 
@@ -70,6 +70,7 @@ func (a *App) registerCommands() {
 }
 
 func (a *App) Run() error {
+	defer a.DB().Close()
 	return a.rootCmd.Execute()
 }
 
