@@ -41,9 +41,11 @@ func New() *App {
 	logger := log.New(os.Stderr, AppName)
 
 	// TODO: load this from config and maybe close the db
+	// TODO: Lazy load this
 	db, err := kv.OpenWithDefaults(DBName)
 	if err != nil {
-		logger.Panic(err)
+		// TODO: Respond with a good error message when the server is not reachable
+		logger.Fatal(err)
 	}
 
 	app := &App{
@@ -66,7 +68,10 @@ func (a *App) Logger() log.Logger {
 }
 
 func (a *App) registerCommands() {
-	a.rootCmd.AddCommand(cmd.NewAddCommand(a))
+	a.rootCmd.AddCommand(
+		cmd.NewAddCommand(a),
+		cmd.NewGetCommand(a),
+	)
 }
 
 func (a *App) Run() error {
@@ -76,6 +81,6 @@ func (a *App) Run() error {
 
 func (a *App) MustRun() {
 	if err := a.Run(); err != nil {
-		a.logger.Fatal(err)
+		a.Logger().Fatal(err)
 	}
 }
