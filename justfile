@@ -39,20 +39,9 @@ fmt:
     @just tidy
 
 tidy:
-    @cd ./tools && go mod tidy
     @cd ./otp && go mod tidy
     @go mod tidy
     @go work sync
-
-goose *FLAGS:
-    @mkdir -p ./migrations
-    @echo "for commands run just goose --help"
-    go run github.com/pressly/goose/v3/cmd/goose -dir migrations/ sqlite3 {{ FLAGS }}
-
-goose-init db *FLAGS:
-    @mkdir -p ./migrations
-    @echo "for commands run just goose --help"
-    go run github.com/pressly/goose/v3/cmd/goose -dir migrations/ sqlite3 {{ db }} create init sql {{ FLAGS }}
 
 serve-charm:
     @charm serve
