@@ -19,14 +19,14 @@ type HotpOptions struct {
 type HotpOption func(*HotpOptions)
 
 func WithDigits(digits uint) HotpOption {
-	return func(to *HotpOptions) {
-		to.Digits = digits
+	return func(ho *HotpOptions) {
+		ho.Digits = digits
 	}
 }
 
 func WithAlgorithm(algorithm otp.Algorithm) HotpOption {
-	return func(to *HotpOptions) {
-		to.Algorithm = algorithm
+	return func(ho *HotpOptions) {
+		ho.Algorithm = algorithm
 	}
 }
 
