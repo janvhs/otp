@@ -1,4 +1,6 @@
 // TODO: Add Secret validation and otp verification
+// TODO: Add otp verification
+// TODO: Add remaining time calculation
 package totp
 
 import (
