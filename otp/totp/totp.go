@@ -34,8 +34,7 @@ func WithStepSize(stepSize uint) TotpOption {
 	}
 }
 
-// A alias for WithStepSize
-// TODO: In the url the step size is named period. Is an alias helpful?
+// Alias for totp.WithStepSize
 func WithPeriod(period uint) TotpOption {
 	return WithStepSize(period)
 }
@@ -69,6 +68,9 @@ const defaultStepSize uint = 30
 
 var defaultAlgorithm otp.Algorithm = sha1.New
 
+// Totp is a stateless time based One Time Password algorithm.
+//
+// It uses a the unix time to verify the user.
 type Totp struct {
 	hotp     *hotp.Hotp
 	stepSize uint
@@ -187,17 +189,20 @@ func (t *Totp) Label() string {
 	return url.PathEscape(label)
 }
 
+// TODO: Maybe change the output to a string and prepend the result with 0s
 func (t *Totp) Calculate(movingFactor uint64) uint32 {
 	flooredSeconds := float64(movingFactor)
 	movingFactor = uint64(math.Floor(flooredSeconds / float64(t.stepSize)))
 	return t.hotp.Calculate(movingFactor)
 }
 
+// TODO: Maybe change the output to a string and prepend the result with 0s
 func (t *Totp) Now() uint32 {
 	unixSeconds := time.Now().Unix()
 	return t.Calculate(uint64(unixSeconds))
 }
 
+// Alias for totp.Now()
 func (t *Totp) CalculateNow() uint32 {
 	return t.Now()
 }
@@ -245,10 +250,6 @@ func NewFromUrl(rawUrl string) (*Totp, error) {
 	}
 
 	encodedSecret := otpUrl.Query().Get("secret")
-	// TODO: Should this throw when the constructor does not?
-	if encodedSecret == "" {
-		return nil, fmt.Errorf("the provided secret can not be empty")
-	}
 
 	totpOptions := []TotpOption{}
 

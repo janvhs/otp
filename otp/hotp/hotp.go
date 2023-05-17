@@ -1,3 +1,8 @@
+// TODO: Add Secret validation and otp verification
+// TODO: Add otp verification
+// TODO: Add remaining time calculation
+// TODO: Add url serialization and deserialization
+// TODO: Add account and issuer
 package hotp
 
 import (
@@ -12,6 +17,7 @@ import (
 )
 
 type HotpOptions struct {
+	// TODO: Change this to a serialisable format
 	Algorithm otp.Algorithm
 	Digits    uint
 }
@@ -34,7 +40,7 @@ const defaultDigits uint = 6
 
 var defaultAlgorithm otp.Algorithm = sha1.New
 
-// Hotp is a counter based One Time Password algorithm.
+// Hotp is a stateful counter based One Time Password algorithm.
 //
 // It uses a counter to verify the user. This counter has to be stored on
 // the server and the client.
@@ -72,8 +78,6 @@ func New(secret []byte, options ...HotpOption) *Hotp {
 
 // Create a Hotp instance from a base32 encoded secret.
 // The algorithm, that is usually used, is sha1.
-//
-// Example:
 //
 // Example:
 //
@@ -115,6 +119,7 @@ func (h *Hotp) Algorithm() otp.Algorithm {
 }
 
 // Calculates the Hotp code, taking a counter as moving factor.
+//
 // TODO: Maybe change the output to a string and prepend the result with 0s
 func (h *Hotp) Calculate(movingFactor uint64) uint32 {
 	digest := calculateDigest(movingFactor, h.algorithm, h.secret)
@@ -129,6 +134,7 @@ func (h *Hotp) Calculate(movingFactor uint64) uint32 {
 // resulting digest minus four bytes.
 // Therefore, the offset has to be between (inclusive) 0 and 16 for SHA1 (20 byte digest),
 // 28 for SHA256 (32 byte digest) and 60 for SHA512 (64 byte digest).
+//
 // TODO: Decide if this should be exposed
 func (h *Hotp) calculateCustomOffset(movingFactor uint64, offset uint8) uint32 {
 	digest := calculateDigest(movingFactor, h.algorithm, h.secret)
