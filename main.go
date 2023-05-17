@@ -73,6 +73,9 @@ func (a *App) registerCommands() {
 	a.rootCmd.AddCommand(
 		cmd.NewAddCommand(a),
 		cmd.NewGetCommand(a),
+		cmd.NewListCommand(a),
+		cmd.NewRemoveCommand(a),
+		cmd.NewSyncCommand(a),
 	)
 }
 
@@ -83,6 +86,6 @@ func (a *App) Run() error {
 
 func (a *App) MustRun() {
 	if err := a.Run(); err != nil {
-		a.Logger().Fatal("the app exited with an error", "err", err)
+		a.Logger().Fatal(err)
 	}
 }
