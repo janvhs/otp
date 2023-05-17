@@ -75,7 +75,7 @@ func (a *App) Logger() *log.Logger {
 func (a *App) registerCommands() {
 	a.rootCmd.AddCommand(
 		cmd.NewAddCommand(a),
-		cmd.NewGetCommand(a),
+		// cmd.NewGetCommand(a),
 		cmd.NewListCommand(a),
 		cmd.NewRemoveCommand(a),
 		cmd.NewSyncCommand(a),

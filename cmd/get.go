@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: Currently, this is not a good experience
+// TODO: Currently, this is not a good experience and therefore it is removed
 func NewGetCommand(app core.App) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "get identifier",
