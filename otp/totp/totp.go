@@ -74,9 +74,6 @@ var defaultAlgorithm otp.Algorithm = sha1.New
 type Totp struct {
 	hotp     *hotp.Hotp
 	stepSize uint
-	// TODO: Move this to hotp
-	account string
-	issuer  string
 }
 
 // Create a Totp instance from a base32 encoded secret.
@@ -102,6 +99,8 @@ func NewFromBase32(secret string, options ...TotpOption) (*Totp, error) {
 	hotp, err := hotp.NewFromBase32(
 		secret,
 		hotp.WithDigits(opts.Digits),
+		hotp.WithAccount(opts.Account),
+		hotp.WithIssuer(opts.Issuer),
 		hotp.WithAlgorithm(opts.Algorithm),
 	)
 
@@ -111,9 +110,6 @@ func NewFromBase32(secret string, options ...TotpOption) (*Totp, error) {
 	return &Totp{
 		hotp:     hotp,
 		stepSize: opts.StepSize,
-		// TODO: Move this to hotp
-		account: opts.Account,
-		issuer:  opts.Issuer,
 	}, nil
 }
 
@@ -139,6 +135,8 @@ func New(secret []byte, options ...TotpOption) *Totp {
 
 	hotp := hotp.New(secret,
 		hotp.WithDigits(opts.Digits),
+		hotp.WithAccount(opts.Account),
+		hotp.WithIssuer(opts.Issuer),
 		hotp.WithAlgorithm(opts.Algorithm),
 	)
 
@@ -168,25 +166,16 @@ func (t *Totp) Period() uint {
 	return t.StepSize()
 }
 
-// TODO: Move account to hotp
 func (t *Totp) Account() string {
-	return t.account
+	return t.hotp.Account()
 }
 
-// TODO: Move issuer to hotp
 func (t *Totp) Issuer() string {
-	return t.issuer
+	return t.hotp.Issuer()
 }
 
-// TODO: Move label to hotp
 func (t *Totp) Label() string {
-	label := t.Account()
-
-	if t.Issuer() != "" {
-		label = label + ":" + t.Issuer()
-	}
-
-	return url.PathEscape(label)
+	return t.hotp.Label()
 }
 
 // TODO: Maybe change the output to a string and prepend the result with 0s
@@ -234,7 +223,7 @@ func (t *Totp) ToUrl() string {
 
 	query.Set("digits", fmt.Sprint(t.Digits()))
 
-	if t.issuer != "" {
+	if t.Issuer() != "" {
 		query.Set("issuer", t.Issuer())
 	}
 
@@ -254,6 +243,7 @@ func NewFromUrl(rawUrl string) (*Totp, error) {
 	totpOptions := []TotpOption{}
 
 	label := otpUrl.Path
+	label = strings.TrimPrefix(label, "/")
 	account, _, _ := strings.Cut(label, ":")
 	if account != "" {
 		totpOptions = append(totpOptions, WithAccount(account))
@@ -283,7 +273,6 @@ func NewFromUrl(rawUrl string) (*Totp, error) {
 
 	issuer := otpUrl.Query().Get("issuer")
 	if issuer != "" {
-		// TODO: Uri decode?
 		totpOptions = append(totpOptions, WithIssuer(issuer))
 	}
 

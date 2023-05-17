@@ -10,7 +10,10 @@ import (
 	"crypto/sha1"
 	"encoding/base32"
 	"encoding/binary"
+	"fmt"
 	"math"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"bode.fun/otp"
@@ -20,6 +23,8 @@ type HotpOptions struct {
 	// TODO: Change this to a serialisable format
 	Algorithm otp.Algorithm
 	Digits    uint
+	Account   string
+	Issuer    string
 }
 
 type HotpOption func(*HotpOptions)
@@ -36,6 +41,18 @@ func WithAlgorithm(algorithm otp.Algorithm) HotpOption {
 	}
 }
 
+func WithAccount(account string) HotpOption {
+	return func(ho *HotpOptions) {
+		ho.Account = account
+	}
+}
+
+func WithIssuer(issuer string) HotpOption {
+	return func(ho *HotpOptions) {
+		ho.Issuer = issuer
+	}
+}
+
 const defaultDigits uint = 6
 
 var defaultAlgorithm otp.Algorithm = sha1.New
@@ -48,6 +65,8 @@ type Hotp struct {
 	secret    []byte
 	algorithm otp.Algorithm
 	digits    uint
+	account   string
+	issuer    string
 }
 
 // Create a Hotp instance from a unencoded secret.
@@ -73,6 +92,8 @@ func New(secret []byte, options ...HotpOption) *Hotp {
 		secret:    secret,
 		algorithm: opts.Algorithm,
 		digits:    opts.Digits,
+		account:   opts.Account,
+		issuer:    opts.Issuer,
 	}
 }
 
@@ -118,6 +139,24 @@ func (h *Hotp) Algorithm() otp.Algorithm {
 	return h.algorithm
 }
 
+func (h *Hotp) Account() string {
+	return h.account
+}
+
+func (h *Hotp) Issuer() string {
+	return h.issuer
+}
+
+func (h *Hotp) Label() string {
+	label := h.Account()
+
+	if h.Issuer() != "" {
+		label = label + ":" + h.Issuer()
+	}
+
+	return url.PathEscape(label)
+}
+
 // Calculates the Hotp code, taking a counter as moving factor.
 //
 // TODO: Maybe change the output to a string and prepend the result with 0s
@@ -140,6 +179,90 @@ func (h *Hotp) calculateCustomOffset(movingFactor uint64, offset uint8) uint32 {
 	digest := calculateDigest(movingFactor, h.algorithm, h.secret)
 	fullCode := encodeDigest(digest, offset)
 	return shortenCodeToDigits(fullCode, h.digits)
+}
+
+// TODO: Add tests
+// References: https://docs.yubico.com/yesdk/users-manual/application-oath/uri-string-format.html
+func (h *Hotp) ToUrl(counter uint64) string {
+	label := h.Account()
+
+	if h.Issuer() != "" {
+		label = label + ":" + h.Issuer()
+	}
+
+	otpUrl := &url.URL{
+		Scheme: "otpauth",
+		Host:   "hotp",
+		Path:   label,
+	}
+
+	encodedSecret := base32.StdEncoding.EncodeToString(h.Secret())
+
+	query := otpUrl.Query()
+
+	query.Set("secret", encodedSecret)
+	query.Set("counter", fmt.Sprint(counter))
+
+	// TODO: Add algorithm, currently sha1 is always assumed
+
+	query.Set("digits", fmt.Sprint(h.Digits()))
+
+	if h.Issuer() != "" {
+		query.Set("issuer", h.Issuer())
+	}
+
+	otpUrl.RawQuery = query.Encode()
+
+	return otpUrl.String()
+}
+
+func NewFromUrl(rawUrl string) (*Hotp, uint64, error) {
+	var counter uint64
+
+	otpUrl, err := url.Parse(rawUrl)
+	if err != nil {
+		return nil, counter, err
+	}
+
+	encodedSecret := otpUrl.Query().Get("secret")
+
+	hotpOptions := []HotpOption{}
+
+	label := otpUrl.Path
+	label = strings.TrimPrefix(label, "/")
+	account, _, _ := strings.Cut(label, ":")
+	if account != "" {
+		hotpOptions = append(hotpOptions, WithAccount(account))
+	}
+
+	counterAsString := otpUrl.Query().Get("counter")
+	if counterAsString != "" {
+		counterAsInt, err := strconv.Atoi(counterAsString)
+		if err != nil {
+			return nil, counter, err
+		}
+
+		counter = uint64(counterAsInt)
+	}
+
+	digitsAsString := otpUrl.Query().Get("digits")
+	if digitsAsString != "" {
+		digitsAsInt, err := strconv.Atoi(digitsAsString)
+		if err != nil {
+			return nil, counter, err
+		}
+
+		digits := uint(digitsAsInt)
+		hotpOptions = append(hotpOptions, WithDigits(digits))
+	}
+
+	issuer := otpUrl.Query().Get("issuer")
+	if issuer != "" {
+		hotpOptions = append(hotpOptions, WithIssuer(issuer))
+	}
+
+	hotpInstance, err := NewFromBase32(encodedSecret, hotpOptions...)
+	return hotpInstance, counter, err
 }
 
 // Calculate hmac digest of the moving Factor
