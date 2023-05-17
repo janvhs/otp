@@ -2,43 +2,54 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"bode.fun/2fa/core"
 	"bode.fun/otp/totp"
 	"github.com/spf13/cobra"
 )
 
+// TODO: This is not a good experience
 func NewGetCommand(app core.App) *cobra.Command {
 	command := &cobra.Command{
-		Use:     "get account",
+		Use:     "get identifier",
 		Aliases: []string{"g"},
-		Short:   "Get a totp from your collection",
-		Args:    cobra.MatchAll(cobra.MinimumNArgs(1)),
+		Short:   "Get an OTP code from your collection",
+		Args:    cobra.MatchAll(cobra.ExactArgs(1)),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: Support issuer and account properly
-			app.Logger().Info("Account and Issuer are not supported yet")
+			identifier := args[0]
 
-			account := strings.Join(args, " ")
-
-			otpUrlAsBytes, err := app.DB().Get([]byte(account))
+			err := app.DB().Reset()
 			if err != nil {
 				return err
 			}
 
-			totpInstance, err := totp.NewFromUrl(string(otpUrlAsBytes))
+			// TODO: Add prefixed zeros
+			// TODO: Add a custom error message when key is not found
+			code, err := getOtpCode(app, identifier)
 			if err != nil {
 				return err
 			}
-
-			fmt.Println(totpInstance.Now())
+			fmt.Println(code)
 
 			return nil
 		},
 	}
 
-	command.Flags().UintP("digits", "d", 6, `The amount of digits your code should have.
-You can pick between 6, 7 or 8 digits.`)
-
 	return command
+}
+
+func getOtpCode(app core.App, identifier string) (uint32, error) {
+	var otpCode uint32
+	otpUrlAsBytes, err := app.DB().Get([]byte(identifier))
+	if err != nil {
+		return otpCode, err
+	}
+
+	totpInstance, err := totp.NewFromUrl(string(otpUrlAsBytes))
+	if err != nil {
+		return otpCode, err
+	}
+
+	otpCode = totpInstance.Now()
+	return otpCode, err
 }
