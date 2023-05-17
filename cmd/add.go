@@ -12,7 +12,7 @@ func NewAddCommand(app core.App) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "add issuer account base32-secret",
 		Aliases: []string{"a"},
-		Short:   "Add a new account to your collection",
+		Short:   "Add a new OTP token to your collection",
 		Args:    cobra.MatchAll(cobra.ExactArgs(3)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			digits, err := cmd.Flags().GetUint("digits")
@@ -21,7 +21,7 @@ func NewAddCommand(app core.App) *cobra.Command {
 			}
 
 			if !(digits >= 6 && digits <= 8) {
-				return fmt.Errorf("the digit flag has to be between 6 and 8")
+				return fmt.Errorf("digits has to be between 6 and 8 digits")
 			}
 
 			issuer := args[0]
@@ -41,19 +41,25 @@ func NewAddCommand(app core.App) *cobra.Command {
 
 			otpUrl := totpInstance.ToUrl()
 
-			err = app.DB().Set([]byte(totpInstance.Label()), []byte(otpUrl))
+			identifier := totpInstance.Label()
+
+			err = app.DB().Set([]byte(identifier), []byte(otpUrl))
 			if err != nil {
 				return err
 			}
 
 			app.Logger().Info(
-				"successfully added totp.",
+				"successfully added a TOTP token.",
 				"account", totpInstance.Account(),
 				"issuer",
 				totpInstance.Issuer(),
 				"id",
 				totpInstance.Label(),
 			)
+
+			// TODO: Check what happens if the key is already available on another machine
+			code, _ := getOtpCode(app, identifier)
+			app.Logger().Info("please check the code to see, if it worked", "code", code)
 
 			err = app.DB().Sync()
 			if err != nil {
