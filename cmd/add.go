@@ -51,15 +51,17 @@ func NewAddCommand(app core.App) *cobra.Command {
 			app.Logger().Info(
 				"successfully added a TOTP token.",
 				"account", totpInstance.Account(),
-				"issuer",
-				totpInstance.Issuer(),
-				"id",
-				totpInstance.Label(),
+				"issuer", totpInstance.Issuer(),
+				"id", totpInstance.Label(),
 			)
 
 			// TODO: Check what happens if the key is already available on another machine
 			code, _ := getOtpCode(app, identifier)
-			app.Logger().Info("please check the code to see, if it worked", "code", code)
+			app.Logger().Info(
+				"please check the code to see, if it worked",
+				"code",
+				code,
+			)
 
 			err = app.DB().Sync()
 			if err != nil {
@@ -69,6 +71,8 @@ func NewAddCommand(app core.App) *cobra.Command {
 			return nil
 		},
 	}
+
+	// TODO: Add step size
 
 	command.Flags().UintP("digits", "d", 6, `The amount of digits your code should have.
 You can pick between 6, 7 or 8 digits.`)

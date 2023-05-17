@@ -31,7 +31,11 @@ func NewListCommand(app core.App) *cobra.Command {
 			for _, identifier := range identifiers {
 				var code uint32
 				code, _ = getOtpCode(app, string(identifier))
-				app.Logger().Print(nil, "id", string(identifier), "code", code)
+				app.Logger().Print(
+					nil,
+					"id", string(identifier),
+					"code", code,
+				)
 			}
 
 			return nil

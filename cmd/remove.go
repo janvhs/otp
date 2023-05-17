@@ -19,7 +19,10 @@ func NewRemoveCommand(app core.App) *cobra.Command {
 			}
 
 			// TODO: Only print if there actually is a key with this id
-			app.Logger().Info("Removed OTP token", "id", identifier)
+			app.Logger().Info(
+				"Removed OTP token",
+				"id", identifier,
+			)
 
 			err = app.DB().Reset()
 			if err != nil {
