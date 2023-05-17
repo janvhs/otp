@@ -1,3 +1,4 @@
+// TODO: Add Secret validation and otp verification
 package totp
 
 import (
@@ -15,6 +16,7 @@ import (
 )
 
 type TotpOptions struct {
+	// TODO: Change this to a serialisable format
 	Algorithm otp.Algorithm
 	Digits    uint
 	StepSize  uint
@@ -172,6 +174,17 @@ func (t *Totp) Issuer() string {
 	return t.issuer
 }
 
+// TODO: Move label to hotp
+func (t *Totp) Label() string {
+	label := t.Account()
+
+	if t.Issuer() != "" {
+		label = label + ":" + t.Issuer()
+	}
+
+	return url.PathEscape(label)
+}
+
 func (t *Totp) Calculate(movingFactor uint64) uint32 {
 	flooredSeconds := float64(movingFactor)
 	movingFactor = uint64(math.Floor(flooredSeconds / float64(t.stepSize)))
@@ -194,7 +207,6 @@ func (t *Totp) ToUrl() string {
 	label := t.Account()
 
 	if t.Issuer() != "" {
-		// TODO: This has to be URI Encoded
 		label = label + ":" + t.Issuer()
 	}
 
@@ -268,7 +280,7 @@ func NewFromUrl(rawUrl string) (*Totp, error) {
 
 	issuer := otpUrl.Query().Get("issuer")
 	if issuer != "" {
-		// TODO: Uri decode
+		// TODO: Uri decode?
 		totpOptions = append(totpOptions, WithIssuer(issuer))
 	}
 
