@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"bode.fun/2fa/core"
 	"bode.fun/otp/totp"
@@ -11,10 +10,10 @@ import (
 
 func NewAddCommand(app core.App) *cobra.Command {
 	command := &cobra.Command{
-		Use:     "add account base32-secret",
+		Use:     "add issuer account base32-secret",
 		Aliases: []string{"a"},
 		Short:   "Add a new account to your collection",
-		Args:    cobra.MatchAll(cobra.MinimumNArgs(2)),
+		Args:    cobra.MatchAll(cobra.ExactArgs(3)),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			digits, err := cmd.Flags().GetUint("digits")
 			if err != nil {
@@ -22,24 +21,15 @@ func NewAddCommand(app core.App) *cobra.Command {
 			}
 
 			if !(digits >= 6 && digits <= 8) {
-				return fmt.Errorf("the code has to be between 6 and 8 digits")
+				return fmt.Errorf("the digit flag has to be between 6 and 8")
 			}
 
-			// TODO: Support issuer and account properly
-			app.Logger().Info("Account and Issuer are not supported yet")
-
-			argLen := len(args)
-
-			account := args[0]
-			secret := args[1]
-
-			if argLen > 2 {
-				accountPats := args[:argLen-1]
-				account = strings.Join(accountPats, " ")
-				secret = args[argLen-1]
-			}
+			issuer := args[0]
+			account := args[1]
+			secret := args[2]
 
 			otpions := []totp.TotpOption{
+				totp.WithIssuer(issuer),
 				totp.WithAccount(account),
 				totp.WithDigits(digits),
 			}
@@ -50,10 +40,20 @@ func NewAddCommand(app core.App) *cobra.Command {
 			}
 
 			otpUrl := totpInstance.ToUrl()
-			err = app.DB().Set([]byte(account), []byte(otpUrl))
+
+			err = app.DB().Set([]byte(totpInstance.Label()), []byte(otpUrl))
 			if err != nil {
 				return err
 			}
+
+			app.Logger().Info(
+				"successfully added totp.",
+				"account", totpInstance.Account(),
+				"issuer",
+				totpInstance.Issuer(),
+				"id",
+				totpInstance.Label(),
+			)
 
 			err = app.DB().Sync()
 			if err != nil {
