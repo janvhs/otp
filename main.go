@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"bode.fun/2fa/cmd"
-	"bode.fun/2fa/log"
 	"github.com/charmbracelet/charm/kv"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ func main() {
 
 type App struct {
 	rootCmd *cobra.Command
-	logger  log.Logger
+	logger  *log.Logger
 	db      *kv.KV
 }
 
@@ -38,14 +38,15 @@ func New() *App {
 		},
 	}
 
-	logger := log.New(os.Stderr, AppName)
+	logger := log.NewWithOptions(os.Stderr, log.Options{
+		Prefix: AppName,
+	})
 
 	// TODO: load this from config and maybe close the db
 	// TODO: Lazy load this
 	db, err := kv.OpenWithDefaults(DBName)
 	if err != nil {
-		// TODO: Respond with a good error message when the server is not reachable
-		logger.Fatal(err)
+		logger.Fatal("can't open the database", "err", err)
 	}
 
 	app := &App{
@@ -59,11 +60,12 @@ func New() *App {
 	return app
 }
 
+// TODO: Add initialization on access
 func (a *App) DB() *kv.KV {
 	return a.db
 }
 
-func (a *App) Logger() log.Logger {
+func (a *App) Logger() *log.Logger {
 	return a.logger
 }
 
@@ -81,6 +83,6 @@ func (a *App) Run() error {
 
 func (a *App) MustRun() {
 	if err := a.Run(); err != nil {
-		a.Logger().Fatal(err)
+		a.Logger().Fatal("the app exited with an error", "err", err)
 	}
 }
