@@ -42,17 +42,10 @@ func New() *App {
 		Prefix: AppName,
 	})
 
-	// TODO: load this from config and maybe close the db
-	// TODO: Lazy load this
-	db, err := kv.OpenWithDefaults(DBName)
-	if err != nil {
-		logger.Fatal("can't open the database", "err", err)
-	}
-
 	app := &App{
 		rootCmd,
 		logger,
-		db,
+		nil,
 	}
 
 	app.registerCommands()
@@ -60,9 +53,19 @@ func New() *App {
 	return app
 }
 
-// TODO: Add initialization on access
 func (a *App) DB() *kv.KV {
-	return a.db
+	if a.db != nil {
+		return a.db
+	}
+
+	db, err := kv.OpenWithDefaults(DBName)
+	if err != nil {
+		a.Logger().Fatal("can't open the database", "err", err)
+	}
+
+	a.db = db
+
+	return db
 }
 
 func (a *App) Logger() *log.Logger {
@@ -80,8 +83,11 @@ func (a *App) registerCommands() {
 }
 
 func (a *App) Run() error {
-	defer a.DB().Close()
-	return a.rootCmd.Execute()
+	err := a.rootCmd.Execute()
+	if a.db != nil {
+		_ = a.db.Close()
+	}
+	return err
 }
 
 func (a *App) MustRun() {
