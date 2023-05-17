@@ -12,7 +12,7 @@ import (
 var (
 	Version = "(dev)"
 	AppName = "2fa"
-	DBName  = AppName
+	DBName  = "bode.fun.2fa.db"
 )
 
 func main() {
