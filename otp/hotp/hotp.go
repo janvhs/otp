@@ -19,37 +19,37 @@ import (
 	"bode.fun/otp"
 )
 
-type HotpOptions struct {
+type hotpOptions struct {
 	// TODO: Change this to a serialisable format
-	Algorithm otp.Algorithm
-	Digits    uint
-	Account   string
-	Issuer    string
+	algorithm otp.Algorithm
+	digits    uint
+	account   string
+	issuer    string
 }
 
-type HotpOption func(*HotpOptions)
+type HotpOption func(*hotpOptions)
 
 func WithDigits(digits uint) HotpOption {
-	return func(ho *HotpOptions) {
-		ho.Digits = digits
+	return func(ho *hotpOptions) {
+		ho.digits = digits
 	}
 }
 
 func WithAlgorithm(algorithm otp.Algorithm) HotpOption {
-	return func(ho *HotpOptions) {
-		ho.Algorithm = algorithm
+	return func(ho *hotpOptions) {
+		ho.algorithm = algorithm
 	}
 }
 
 func WithAccount(account string) HotpOption {
-	return func(ho *HotpOptions) {
-		ho.Account = account
+	return func(ho *hotpOptions) {
+		ho.account = account
 	}
 }
 
 func WithIssuer(issuer string) HotpOption {
-	return func(ho *HotpOptions) {
-		ho.Issuer = issuer
+	return func(ho *hotpOptions) {
+		ho.issuer = issuer
 	}
 }
 
@@ -79,9 +79,9 @@ type Hotp struct {
 //				WithDigits(6),
 //			)
 func New(secret []byte, options ...HotpOption) *Hotp {
-	opts := &HotpOptions{
-		Algorithm: defaultAlgorithm,
-		Digits:    defaultDigits,
+	opts := &hotpOptions{
+		algorithm: defaultAlgorithm,
+		digits:    defaultDigits,
 	}
 
 	for _, option := range options {
@@ -90,10 +90,10 @@ func New(secret []byte, options ...HotpOption) *Hotp {
 
 	return &Hotp{
 		secret:    secret,
-		algorithm: opts.Algorithm,
-		digits:    opts.Digits,
-		account:   opts.Account,
-		issuer:    opts.Issuer,
+		algorithm: opts.algorithm,
+		digits:    opts.digits,
+		account:   opts.account,
+		issuer:    opts.issuer,
 	}
 }
 

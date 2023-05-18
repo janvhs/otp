@@ -17,20 +17,20 @@ import (
 	"bode.fun/otp/hotp"
 )
 
-type TotpOptions struct {
+type totpOptions struct {
 	// TODO: Change this to a serialisable format
-	Algorithm otp.Algorithm
-	Digits    uint
-	StepSize  uint
-	Account   string
-	Issuer    string
+	algorithm otp.Algorithm
+	digits    uint
+	stepSize  uint
+	account   string
+	issuer    string
 }
 
-type TotpOption func(*TotpOptions)
+type TotpOption func(*totpOptions)
 
 func WithStepSize(stepSize uint) TotpOption {
-	return func(to *TotpOptions) {
-		to.StepSize = stepSize
+	return func(to *totpOptions) {
+		to.stepSize = stepSize
 	}
 }
 
@@ -40,26 +40,26 @@ func WithPeriod(period uint) TotpOption {
 }
 
 func WithDigits(digits uint) TotpOption {
-	return func(to *TotpOptions) {
-		to.Digits = digits
+	return func(to *totpOptions) {
+		to.digits = digits
 	}
 }
 
 func WithAlgorithm(algorithm otp.Algorithm) TotpOption {
-	return func(to *TotpOptions) {
-		to.Algorithm = algorithm
+	return func(to *totpOptions) {
+		to.algorithm = algorithm
 	}
 }
 
 func WithAccount(account string) TotpOption {
-	return func(to *TotpOptions) {
-		to.Account = account
+	return func(to *totpOptions) {
+		to.account = account
 	}
 }
 
 func WithIssuer(issuer string) TotpOption {
-	return func(to *TotpOptions) {
-		to.Issuer = issuer
+	return func(to *totpOptions) {
+		to.issuer = issuer
 	}
 }
 
@@ -86,10 +86,10 @@ type Totp struct {
 //				WithDigits(6),
 //			)
 func NewFromBase32(secret string, options ...TotpOption) (*Totp, error) {
-	opts := &TotpOptions{
-		Algorithm: defaultAlgorithm,
-		Digits:    defaultDigits,
-		StepSize:  defaultStepSize,
+	opts := &totpOptions{
+		algorithm: defaultAlgorithm,
+		digits:    defaultDigits,
+		stepSize:  defaultStepSize,
 	}
 
 	for _, option := range options {
@@ -98,10 +98,10 @@ func NewFromBase32(secret string, options ...TotpOption) (*Totp, error) {
 
 	hotp, err := hotp.NewFromBase32(
 		secret,
-		hotp.WithDigits(opts.Digits),
-		hotp.WithAccount(opts.Account),
-		hotp.WithIssuer(opts.Issuer),
-		hotp.WithAlgorithm(opts.Algorithm),
+		hotp.WithDigits(opts.digits),
+		hotp.WithAccount(opts.account),
+		hotp.WithIssuer(opts.issuer),
+		hotp.WithAlgorithm(opts.algorithm),
 	)
 
 	if err != nil {
@@ -109,7 +109,7 @@ func NewFromBase32(secret string, options ...TotpOption) (*Totp, error) {
 	}
 	return &Totp{
 		hotp:     hotp,
-		stepSize: opts.StepSize,
+		stepSize: opts.stepSize,
 	}, nil
 }
 
@@ -123,10 +123,10 @@ func NewFromBase32(secret string, options ...TotpOption) (*Totp, error) {
 //				WithDigits(6),
 //			)
 func New(secret []byte, options ...TotpOption) *Totp {
-	opts := &TotpOptions{
-		Algorithm: defaultAlgorithm,
-		Digits:    defaultDigits,
-		StepSize:  defaultStepSize,
+	opts := &totpOptions{
+		algorithm: defaultAlgorithm,
+		digits:    defaultDigits,
+		stepSize:  defaultStepSize,
 	}
 
 	for _, option := range options {
@@ -134,15 +134,15 @@ func New(secret []byte, options ...TotpOption) *Totp {
 	}
 
 	hotp := hotp.New(secret,
-		hotp.WithDigits(opts.Digits),
-		hotp.WithAccount(opts.Account),
-		hotp.WithIssuer(opts.Issuer),
-		hotp.WithAlgorithm(opts.Algorithm),
+		hotp.WithDigits(opts.digits),
+		hotp.WithAccount(opts.account),
+		hotp.WithIssuer(opts.issuer),
+		hotp.WithAlgorithm(opts.algorithm),
 	)
 
 	return &Totp{
 		hotp:     hotp,
-		stepSize: opts.StepSize,
+		stepSize: opts.stepSize,
 	}
 }
 
