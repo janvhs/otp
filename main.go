@@ -4,15 +4,15 @@ import (
 	"os"
 
 	"bode.fun/2fa/cmd"
-	"bode.fun/2fa/core"
-	"bode.fun/2fa/log"
-	"github.com/pocketbase/dbx"
+	"github.com/charmbracelet/charm/kv"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 )
 
 var (
 	Version = "(dev)"
 	AppName = "2fa"
+	DBName  = "bode.fun.2fa.db"
 )
 
 func main() {
@@ -22,8 +22,8 @@ func main() {
 
 type App struct {
 	rootCmd *cobra.Command
-	logger  log.Logger
-	db      *dbx.DB
+	logger  *log.Logger
+	db      *kv.KV
 }
 
 func New() *App {
@@ -38,18 +38,14 @@ func New() *App {
 		},
 	}
 
-	logger := log.New(os.Stderr, AppName)
-
-	// TODO: load this from config and maybe close the db
-	db, err := core.ConnectDB(":memory:")
-	if err != nil {
-		logger.Panic(err)
-	}
+	logger := log.NewWithOptions(os.Stderr, log.Options{
+		Prefix: AppName,
+	})
 
 	app := &App{
 		rootCmd,
 		logger,
-		db,
+		nil,
 	}
 
 	app.registerCommands()
@@ -57,24 +53,45 @@ func New() *App {
 	return app
 }
 
-func (a *App) DB() *dbx.DB {
-	return a.db
+func (a *App) DB() *kv.KV {
+	if a.db != nil {
+		return a.db
+	}
+
+	db, err := kv.OpenWithDefaults(DBName)
+	if err != nil {
+		a.Logger().Fatal("can't open the database", "err", err)
+	}
+
+	a.db = db
+
+	return db
 }
 
-func (a *App) Logger() log.Logger {
+func (a *App) Logger() *log.Logger {
 	return a.logger
 }
 
 func (a *App) registerCommands() {
-	a.rootCmd.AddCommand(cmd.NewAddCommand(a))
+	a.rootCmd.AddCommand(
+		cmd.NewAddCommand(a),
+		// cmd.NewGetCommand(a),
+		cmd.NewListCommand(a),
+		cmd.NewRemoveCommand(a),
+		cmd.NewSyncCommand(a),
+	)
 }
 
 func (a *App) Run() error {
-	return a.rootCmd.Execute()
+	err := a.rootCmd.Execute()
+	if a.db != nil {
+		_ = a.db.Close()
+	}
+	return err
 }
 
 func (a *App) MustRun() {
 	if err := a.Run(); err != nil {
-		a.logger.Fatal(err)
+		a.Logger().Fatal(err)
 	}
 }

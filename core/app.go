@@ -1,11 +1,11 @@
 package core
 
 import (
-	"bode.fun/2fa/log"
-	"github.com/pocketbase/dbx"
+	"github.com/charmbracelet/charm/kv"
+	"github.com/charmbracelet/log"
 )
 
 type App interface {
-	DB() *dbx.DB
-	Logger() log.Logger
+	DB() *kv.KV
+	Logger() *log.Logger
 }

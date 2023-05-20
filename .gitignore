@@ -12,4 +12,5 @@ dist/
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-test.db
+# The data from charm serve for local development
+charm_data/
