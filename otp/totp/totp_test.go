@@ -1,8 +1,6 @@
 package totp_test
 
 import (
-	"crypto/sha256"
-	"crypto/sha512"
 	"testing"
 
 	"bode.fun/otp/totp"
@@ -61,7 +59,7 @@ func Test_Rfc6238_Sha256(t *testing.T) {
 	is := is.New(t)
 	totp := totp.New(
 		[]byte("12345678901234567890123456789012"),
-		totp.WithAlgorithm(sha256.New),
+		totp.WithAlgorithm(totp.Sha256),
 		totp.WithDigits(8),
 	)
 
@@ -105,7 +103,7 @@ func Test_Rfc6238_Sha512(t *testing.T) {
 	is := is.New(t)
 	totp := totp.New(
 		[]byte("1234567890123456789012345678901234567890123456789012345678901234"),
-		totp.WithAlgorithm(sha512.New),
+		totp.WithAlgorithm(totp.Sha512),
 		totp.WithDigits(8),
 	)
 

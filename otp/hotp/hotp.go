@@ -1,27 +1,46 @@
 // TODO: Add Secret validation and otp verification
 // TODO: Add otp verification
 // TODO: Add remaining time calculation
-// TODO: Add url serialization and deserialization
-// TODO: Add account and issuer
 package hotp
 
 import (
 	"crypto/hmac"
 	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/base32"
 	"encoding/binary"
 	"fmt"
+	"hash"
 	"math"
 	"net/url"
 	"strconv"
 	"strings"
-
-	"bode.fun/otp"
 )
 
+type Algorithm string
+
+const (
+	Sha1   Algorithm = "sha1"
+	Sha256 Algorithm = "sha256"
+	Sha512 Algorithm = "sha512"
+)
+
+func (a Algorithm) ToHashFunction() func() hash.Hash {
+	switch a {
+	case Sha1:
+		return sha1.New
+	case Sha256:
+		return sha256.New
+	case Sha512:
+		return sha512.New
+	default:
+		return nil
+	}
+}
+
 type hotpOptions struct {
-	// TODO: Change this to a serialisable format
-	algorithm otp.Algorithm
+	algorithm Algorithm
 	digits    uint
 	account   string
 	issuer    string
@@ -35,7 +54,7 @@ func WithDigits(digits uint) HotpOption {
 	}
 }
 
-func WithAlgorithm(algorithm otp.Algorithm) HotpOption {
+func WithAlgorithm(algorithm Algorithm) HotpOption {
 	return func(ho *hotpOptions) {
 		ho.algorithm = algorithm
 	}
@@ -55,7 +74,7 @@ func WithIssuer(issuer string) HotpOption {
 
 const defaultDigits uint = 6
 
-var defaultAlgorithm otp.Algorithm = sha1.New
+var defaultAlgorithm Algorithm = Sha1
 
 // Hotp is a stateful counter based One Time Password algorithm.
 //
@@ -63,7 +82,7 @@ var defaultAlgorithm otp.Algorithm = sha1.New
 // the server and the client.
 type Hotp struct {
 	secret    []byte
-	algorithm otp.Algorithm
+	algorithm Algorithm
 	digits    uint
 	account   string
 	issuer    string
@@ -135,7 +154,7 @@ func (h *Hotp) Secret() []byte {
 	return h.secret
 }
 
-func (h *Hotp) Algorithm() otp.Algorithm {
+func (h *Hotp) Algorithm() Algorithm {
 	return h.algorithm
 }
 
@@ -203,7 +222,7 @@ func (h *Hotp) ToUrl(counter uint64) string {
 	query.Set("secret", encodedSecret)
 	query.Set("counter", fmt.Sprint(counter))
 
-	// TODO: Add algorithm, currently sha1 is always assumed
+	query.Set("algorithm", string(h.Algorithm()))
 
 	query.Set("digits", fmt.Sprint(h.Digits()))
 
@@ -216,6 +235,7 @@ func (h *Hotp) ToUrl(counter uint64) string {
 	return otpUrl.String()
 }
 
+// TODO: Add some tests
 func NewFromUrl(rawUrl string) (*Hotp, uint64, error) {
 	var counter uint64
 
@@ -261,13 +281,19 @@ func NewFromUrl(rawUrl string) (*Hotp, uint64, error) {
 		hotpOptions = append(hotpOptions, WithIssuer(issuer))
 	}
 
+	algorithm := otpUrl.Query().Get("algorithm")
+	if algorithm == "" {
+		algorithm = string(Sha1)
+	}
+	hotpOptions = append(hotpOptions, WithAlgorithm(Algorithm(algorithm)))
+
 	hotpInstance, err := NewFromBase32(encodedSecret, hotpOptions...)
 	return hotpInstance, counter, err
 }
 
 // Calculate hmac digest of the moving Factor
-func calculateDigest(movingFactor uint64, algorithm otp.Algorithm, secret []byte) []byte {
-	hmacInstance := hmac.New(algorithm, secret)
+func calculateDigest(movingFactor uint64, algorithm Algorithm, secret []byte) []byte {
+	hmacInstance := hmac.New(algorithm.ToHashFunction(), secret)
 	binary.Write(hmacInstance, binary.BigEndian, movingFactor)
 	return hmacInstance.Sum(nil)
 }

@@ -1,10 +1,10 @@
 // TODO: Add Secret validation and otp verification
 // TODO: Add otp verification
 // TODO: Add remaining time calculation
+// TODO: Add window for validation
 package totp
 
 import (
-	"crypto/sha1"
 	"encoding/base32"
 	"fmt"
 	"math"
@@ -13,13 +13,19 @@ import (
 	"strings"
 	"time"
 
-	"bode.fun/otp"
 	"bode.fun/otp/hotp"
 )
 
+type Algorithm = hotp.Algorithm
+
+const (
+	Sha1   Algorithm = hotp.Sha1
+	Sha256 Algorithm = hotp.Sha256
+	Sha512 Algorithm = hotp.Sha512
+)
+
 type totpOptions struct {
-	// TODO: Change this to a serialisable format
-	algorithm otp.Algorithm
+	algorithm Algorithm
 	digits    uint
 	stepSize  uint
 	account   string
@@ -45,7 +51,7 @@ func WithDigits(digits uint) TotpOption {
 	}
 }
 
-func WithAlgorithm(algorithm otp.Algorithm) TotpOption {
+func WithAlgorithm(algorithm Algorithm) TotpOption {
 	return func(to *totpOptions) {
 		to.algorithm = algorithm
 	}
@@ -66,7 +72,7 @@ func WithIssuer(issuer string) TotpOption {
 const defaultDigits uint = 6
 const defaultStepSize uint = 30
 
-var defaultAlgorithm otp.Algorithm = sha1.New
+var defaultAlgorithm Algorithm = Sha1
 
 // Totp is a stateless time based One Time Password algorithm.
 //
@@ -154,7 +160,7 @@ func (t *Totp) Secret() []byte {
 	return t.hotp.Secret()
 }
 
-func (t *Totp) Algorithm() otp.Algorithm {
+func (t *Totp) Algorithm() Algorithm {
 	return t.hotp.Algorithm()
 }
 
@@ -219,7 +225,7 @@ func (t *Totp) ToUrl() string {
 	query.Set("secret", encodedSecret)
 	query.Set("period", fmt.Sprint(t.StepSize()))
 
-	// TODO: Add algorithm, currently sha1 is always assumed
+	query.Set("algorithm", string(t.Algorithm()))
 
 	query.Set("digits", fmt.Sprint(t.Digits()))
 
@@ -275,6 +281,12 @@ func NewFromUrl(rawUrl string) (*Totp, error) {
 	if issuer != "" {
 		totpOptions = append(totpOptions, WithIssuer(issuer))
 	}
+
+	algorithm := otpUrl.Query().Get("algorithm")
+	if algorithm == "" {
+		algorithm = string(Sha1)
+	}
+	totpOptions = append(totpOptions, WithAlgorithm(hotp.Algorithm(algorithm)))
 
 	return NewFromBase32(encodedSecret, totpOptions...)
 }
