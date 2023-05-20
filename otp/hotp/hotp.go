@@ -1,6 +1,6 @@
-// TODO: Add Secret validation and otp verification
+// TODO: Add Secret validation
 // TODO: Add otp verification
-// TODO: Add remaining time calculation
+// TODO: Add verification against a window
 package hotp
 
 import (

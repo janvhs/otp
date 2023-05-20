@@ -1,4 +1,5 @@
 // TODO: Add Secret validation and otp verification
+// TODO: Add secret generation
 // TODO: Add otp verification
 // TODO: Add remaining time calculation
 // TODO: Add window for validation
