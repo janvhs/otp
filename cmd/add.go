@@ -20,6 +20,11 @@ func NewAddCommand(app core.App) *cobra.Command {
 				return err
 			}
 
+			period, err := cmd.Flags().GetUint("period")
+			if err != nil {
+				return err
+			}
+
 			if !(digits >= 6 && digits <= 8) {
 				return fmt.Errorf("digits has to be between 6 and 8 digits")
 			}
@@ -32,6 +37,7 @@ func NewAddCommand(app core.App) *cobra.Command {
 				totp.WithIssuer(issuer),
 				totp.WithAccount(account),
 				totp.WithDigits(digits),
+				totp.WithPeriod(period),
 			}
 
 			totpInstance, err := totp.NewFromBase32(secret, otpions...)
@@ -76,6 +82,8 @@ func NewAddCommand(app core.App) *cobra.Command {
 
 	command.Flags().UintP("digits", "d", 6, `The amount of digits your code should have.
 You can pick between 6, 7 or 8 digits.`)
+
+	command.Flags().Uint("period", 30, `The time in seconds, after which the token changes`)
 
 	return command
 }
